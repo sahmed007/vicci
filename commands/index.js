@@ -2,7 +2,7 @@ import prompt from './prompt';
 import actions from './actions';
 
 const config = {
-  initialMessage: `Hi, I am Vicky, your computer assistant`,
+  initialMessage: `Hello, I'm Vicky, your Vision Impaired Computer Control Interface. How can I assist you today?`,
   prompt,
   actions,
   ttsConfig: {
