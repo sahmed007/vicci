@@ -1,0 +1,56 @@
+{
+  "manifest_version": 3,
+  "name": "VICCI - Vision Impaired Computer Control Interface",
+  "version": "1.0",
+  "description": "An AI-powered screen reader and web navigation assistant for visually impaired users",
+  "permissions": [
+    "activeTab",
+    "storage",
+    "scripting",
+    "tts"
+  ],
+  "background": {
+    "service_worker": "src/background/index.js"
+  },
+  "content_scripts": [
+    {
+      "matches": ["<all_urls>"],
+      "js": [
+        "src/utils/dom-parser.js",
+        "src/utils/text-to-speech.js",
+        "src/utils/voice-recognition.js",
+        "src/commands/describe-page.js",
+        "src/commands/navigate.js",
+        "src/commands/interact.js",
+        "src/content/index.js"
+      ]
+    }
+  ],
+  "web_accessible_resources": [
+    {
+      "resources": ["public/audio/activation-sound.mp3"],
+      "matches": ["<all_urls>"]
+    }
+  ],
+  "commands": {
+    "activate-vicci": {
+      "suggested_key": {
+        "default": "Ctrl+Shift+V",
+        "mac": "Command+Shift+V"
+      },
+      "description": "Activate VICCI"
+    },
+    "describe-page": {
+      "suggested_key": {
+        "default": "Ctrl+Shift+D",
+        "mac": "Command+Shift+D"
+      },
+      "description": "Describe current page"
+    }
+  },
+  "icons": {
+    "16": "public/icons/icon16.png",
+    "48": "public/icons/icon48.png",
+    "128": "public/icons/icon128.png"
+  }
+}
