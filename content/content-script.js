@@ -203,51 +203,63 @@ function handleVoiceCommand(command) {
 let lastScreenshotTime = 0;
 const SCREENSHOT_INTERVAL = 1000;
 
-function captureScreenshot(callback) {
-  const now = Date.now();
-  if (now - lastScreenshotTime < SCREENSHOT_INTERVAL) return;
-  lastScreenshotTime = now;
-
-  chrome.runtime.sendMessage(
-    { action: "captureScreenshot" },
-    function (response) {
-      if (response && response.dataURL) {
-        callback(response.dataURL);
-      } else if (response && response.error) {
-        console.error("Error capturing screenshot:", response.error);
-      }
+function captureScreenshot() {
+  return new Promise((resolve, reject) => {
+    const now = Date.now();
+    if (now - lastScreenshotTime < SCREENSHOT_INTERVAL) {
+      return reject("Screenshot interval not met");
     }
-  );
+    lastScreenshotTime = now;
+
+    chrome.runtime.sendMessage(
+      { action: "captureScreenshot" },
+      function (response) {
+        if (response && response.dataURL) {
+          resolve(response.dataURL);
+        } else if (response && response.error) {
+          reject(response.error);
+        }
+      }
+    );
+  });
 }
 
 async function describePage() {
   console.log("VICCI Content Script: Describing page");
-  captureScreenshot((screenshotDataUrl) => {
-    console.log(screenshotDataUrl);
-    fetch(
+  try {
+    const screenshotDataUrl = await captureScreenshot();
+    console.log("Screenshot captured:", screenshotDataUrl);
+    const response = await fetch(
       "https://us-central1-aitx-hack24aus-622.cloudfunctions.net/browser-generation-test",
       {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "Access-Control-Allow-Origin": "*",
         },
         body: JSON.stringify({ screenshotDataUrl }),
         mode: "no-cors",
       }
-    )
-      .then((response) => response.text())
-      .then((text) => {
-        console.log("Raw response:", text);
-        const data = JSON.parse(text);
-        console.log("RESULTS", data);
-        speakFeedback(data.content);
-      })
-      .catch((error) => {
-        console.error("VICCI Content Script: Error generating content:", error);
-        speakFeedback("Failed to generate content.");
-      });
-  });
+    );
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    const text = await response.text();
+    console.log("Raw response:", text);
+
+    try {
+      const data = JSON.parse(text);
+      console.log("RESULTS", data);
+      speakFeedback(data.content);
+    } catch (error) {
+      console.error("Error parsing JSON:", error);
+      speakFeedback("Failed to parse response.");
+    }
+  } catch (error) {
+    console.error("VICCI Content Script: Error generating content:", error);
+    speakFeedback("Failed to generate content.");
+  }
 }
 
 console.log("VICCI Content Script: Initialization complete");
