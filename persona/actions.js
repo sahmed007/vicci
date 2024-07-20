@@ -18,7 +18,7 @@ const actions = {
         {
           "user says": "Vicci, click on the blue box",
           "assistant action includes": {},
-          "_response": "I couldn't identify the element. Can you describe it in more detail, or try using a different element identifier?"
+          "_response": "I couldn't identify the element. Can you describe it in more detail, or try something else?"
         }
       ],
       "type": "object",
