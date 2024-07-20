@@ -200,7 +200,14 @@ function handleVoiceCommand(command) {
   // Add more voice command handlers as needed
 }
 
+let lastScreenshotTime = 0;
+const SCREENSHOT_INTERVAL = 1000;
+
 function captureScreenshot(callback) {
+  const now = Date.now();
+  if (now - lastScreenshotTime < SCREENSHOT_INTERVAL) return;
+  lastScreenshotTime = now;
+
   chrome.runtime.sendMessage(
     { action: "captureScreenshot" },
     function (response) {
