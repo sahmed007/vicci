@@ -213,19 +213,6 @@ function captureScreenshot(callback) {
   );
 }
 
-function captureScreenshot(callback) {
-  chrome.runtime.sendMessage(
-    { action: "captureScreenshot" },
-    function (response) {
-      if (response && response.dataURL) {
-        callback(response.dataURL);
-      } else if (response && response.error) {
-        console.error("Error capturing screenshot:", response.error);
-      }
-    }
-  );
-}
-
 async function describePage() {
   console.log("VICCI Content Script: Describing page");
   captureScreenshot((screenshotDataUrl) => {
