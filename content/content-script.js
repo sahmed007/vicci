@@ -213,23 +213,36 @@ function captureScreenshot(callback) {
   );
 }
 
+function captureScreenshot(callback) {
+  chrome.runtime.sendMessage(
+    { action: "captureScreenshot" },
+    function (response) {
+      if (response && response.dataURL) {
+        callback(response.dataURL);
+      } else if (response && response.error) {
+        console.error("Error capturing screenshot:", response.error);
+      }
+    }
+  );
+}
+
 async function describePage() {
   console.log("VICCI Content Script: Describing page");
-  captureScreenshot()
-    .then(async (screenshotDataUrl) => {
-      console.log(
-        "VICCI Content Script: Screenshot captured:",
-        screenshotDataUrl
-      );
-      // You can now use the screenshotDataUrl as needed
-      const content = await generateContent(screenshotDataUrl);
-      console.log("RESULTS", content);
-      speakFeedback(content);
-    })
-    .catch((error) => {
-      console.error("VICCI Content Script: Error capturing screenshot:", error);
-      speakFeedback("Failed to capture screenshot.");
-    });
+  captureScreenshot((screenshotDataUrl) => {
+    console.log(
+      "VICCI Content Script: Screenshot captured:",
+      screenshotDataUrl
+    );
+    generateContent(screenshotDataUrl)
+      .then((content) => {
+        console.log("RESULTS", content);
+        speakFeedback(content);
+      })
+      .catch((error) => {
+        console.error("VICCI Content Script: Error generating content:", error);
+        speakFeedback("Failed to generate content.");
+      });
+  });
 }
 
 console.log("VICCI Content Script: Initialization complete");
