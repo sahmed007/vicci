@@ -5,9 +5,10 @@
   "description": "An AI-powered screen reader and web navigation assistant for visually impaired users",
   "permissions": [
     "activeTab",
-    "storage",
-    "scripting",
-    "tts"
+    "tts",
+    "commands",
+    "tabs",
+    "storage"
    ],
   "host_permissions": [
     "<all_urls>"

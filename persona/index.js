@@ -31,49 +31,52 @@ document.addEventListener('DOMContentLoaded', () => {
     initializePersonaClient();
   };
   document.head.appendChild(script);
-
+  
+//add some logs, behavior is strange.
   function initializePersonaClient() {
-    const personaConfig = {
-      userId: "admin",
-      personaName: "John",
-      options: {
-        debugMode: true,
-        streamTranscripts: true,
-        shouldNotSaveConversation: true,
-      },
-    };
+  const personaConfig = {
+    userId: "admin",
+    personaName: "John",
+    options: {
+      debugMode: true,
+      streamTranscripts: true,
+      shouldNotSaveConversation: true,
+    },
+  };
 
-    window.personaClient.init(personaConfig)
-      .then(() => {
-        configurePersonaEvents();
-        promptMicrophoneAccess();
-      })
-      .catch(error => {
-        console.log(error);
-      });
-  }
-
-  function configurePersonaEvents() {
-    window.personaClient.on("messages_update", messages => {
-      console.log(messages);
+  window.personaClient.init(personaConfig)
+    .then(() => {
+      console.log('PersonaClient initialized successfully');
+      configurePersonaEvents();
+      promptMicrophoneAccess();
+    })
+    .catch(error => {
+      console.error('Error initializing PersonaClient:', error);
     });
+}
 
-    window.personaClient.on("state_updated", newState => {
-      console.log(newState);
-    });
+//add logging try to determine whats going on here.
+function configurePersonaEvents() {
+  window.personaClient.on("messages_update", messages => {
+    console.log('Messages updated:', messages);
+  });
 
-    window.personaClient.on("action", action => {
-      console.log(action);
-    });
+  window.personaClient.on("state_updated", newState => {
+    console.log('State updated:', newState);
+  });
 
-    window.personaClient.on("error", error => {
-      console.log(error);
-    });
+  window.personaClient.on("action", action => {
+    console.log('Action received:', action);
+  });
 
-    window.personaClient.on("connect_error", error => {
-      console.log(error);
-    });
-  }
+  window.personaClient.on("error", error => {
+    console.error('Error event:', error);
+  });
+
+  window.personaClient.on("connect_error", error => {
+    console.error('Connect error event:', error);
+  });
+}
 
   function promptMicrophoneAccess() {
     speakFeedback("Please allow microphone access to enable voice commands.");
@@ -90,59 +93,7 @@ document.addEventListener('DOMContentLoaded', () => {
       });
   }
 
-  function initializeMicrophone() {
-    if (!('webkitSpeechRecognition' in window)) {
-      console.log("Speech recognition not supported");
-      speakFeedback("Speech recognition is not supported in your browser.");
-      return;
-    }
-
-    const recognition = new webkitSpeechRecognition();
-    recognition.continuous = true;
-    recognition.interimResults = false;
-    recognition.lang = 'en-US';
-
-    recognition.onstart = () => {
-      console.log('Voice recognition started.');
-      speakFeedback("Voice recognition started. You can now give voice commands.");
-    };
-
-    recognition.onresult = (event) => {
-      const transcript = event.results[event.resultIndex][0].transcript.trim();
-      console.log('Voice command received:', transcript);
-      handleVoiceCommand(transcript);
-    };
-
-    recognition.onerror = (event) => {
-      console.log('Voice recognition error:', event.error);
-      speakFeedback(`Voice recognition error: ${event.error}`);
-    };
-
-    recognition.onend = () => {
-      console.log('Voice recognition ended.');
-      // Optionally, restart recognition after a pause
-      recognition.start();
-    };
-
-    recognition.start();
-  }
-
-  function handleVoiceCommand(command) {
-    // Handle voice commands to control chat and other actions
-    if (command.toLowerCase().includes('start chat')) {
-      window.VICCI.actions.startChat();
-    } else if (command.toLowerCase().includes('pause chat')) {
-      window.VICCI.actions.pauseChat();
-    } else if (command.toLowerCase().includes('resume chat')) {
-      window.VICCI.actions.resumeChat();
-    } else if (command.toLowerCase().includes('stop chat')) {
-      window.VICCI.actions.stopChat();
-    } else if (command.toLowerCase().includes('describe page')) {
-      window.VICCI.actions.describePage();
-    }
-    // Add more voice command handlers as needed
-  }
-
+  
   function speakFeedback(text) {
     chrome.tts.speak(text, {
       'rate': 1.0,

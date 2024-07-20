@@ -1,10 +1,14 @@
 console.log('VICCI Content Script: Initializing...');
 
 let isVicciActive = false;
+let isRecognitionActive = false;
+let isSpeaking = false;
+let recognition;
 
 function activateVicci() {
   console.log('VICCI Content Script: Activating VICCI');
   isVicciActive = true;
+  requestMicrophoneAccess();  // Ensure microphone access is requested when VICCI is activated
   speakFeedback(window.VICCI.config.initialMessage);
 }
 
@@ -12,12 +16,25 @@ function deactivateVicci() {
   console.log('VICCI Content Script: Deactivating VICCI');
   isVicciActive = false;
   speakFeedback("VICCI deactivated.");
+  stopRecognition();  // Ensure recognition is stopped when VICCI is deactivated
 }
 
 function speakFeedback(text) {
   console.log('VICCI Content Script: Speaking feedback:', text);
+  isSpeaking = true;
+  if (recognition && isRecognitionActive) {
+    recognition.stop();  // Stop recognition before speaking
+  }
+
   chrome.runtime.sendMessage({ action: "speak", text: text }, (response) => {
     console.log('VICCI Content Script: TTS response:', response);
+    isSpeaking = false;
+    if (isVicciActive && !isRecognitionActive) {
+      setTimeout(() => {
+        console.log('VICCI Content Script: Restarting voice recognition after TTS.');
+        recognition.start();  // Restart recognition after speaking
+      }, 1500);  // Adding a delay to avoid immediate loop and allow TTS feedback to finish
+    }
   });
 }
 
@@ -59,6 +76,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
 
   if (request.action === "activateVicci") {
     activateVicci();
+    sendResponse({ status: "activateVicci executed" });
   } else if (request.action === "describePage") {
     console.log('VICCI Content Script: describePage action received');
     describePage();
@@ -67,6 +85,10 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     console.log('VICCI Content Script: activateMicrophone action received');
     requestMicrophoneAccess();
     sendResponse({ status: "activateMicrophone executed" });
+  } else if (request.action === "getExposedFunctions") {
+    console.log('Content Script: Received request for exposed functions.');
+    const functions = Object.keys(window.VICCI.actions).filter(key => typeof window.VICCI.actions[key] === 'function');
+    sendResponse({ functions });
   }
 });
 
@@ -94,34 +116,56 @@ function initializeMicrophone() {
     return;
   }
 
-  const recognition = new webkitSpeechRecognition();
+  recognition = new webkitSpeechRecognition();
   recognition.continuous = true;
   recognition.interimResults = false;
   recognition.lang = 'en-US';
 
   recognition.onstart = () => {
+    isRecognitionActive = true;
     console.log('VICCI Content Script: Voice recognition started.');
-    speakFeedback("Voice recognition started. You can now give voice commands.");
+    if (!isSpeaking) {
+      speakFeedback("Voice recognition started. You can now give voice commands.");
+    }
   };
 
   recognition.onresult = (event) => {
     const transcript = event.results[event.resultIndex][0].transcript.trim();
     console.log('VICCI Content Script: Voice command received:', transcript);
+    if (!isSpeaking) {
+      speakFeedback(`Voice command received: ${transcript}`);
+    }
     handleVoiceCommand(transcript);
   };
 
   recognition.onerror = (event) => {
     console.log('VICCI Content Script: Voice recognition error:', event.error);
-    speakFeedback(`Voice recognition error: ${event.error}`);
+    if (!isSpeaking) {
+      speakFeedback(`Voice recognition error: ${event.error}`);
+    }
   };
 
   recognition.onend = () => {
-    console.log('VICCI Content Script: Voice recognition ended.');
-    // Optionally, restart recognition after a pause
-    recognition.start();
+    if (isVicciActive) {
+      setTimeout(() => {
+        console.log('VICCI Content Script: Voice recognition ended, restarting after delay.');
+        recognition.start();  // Restart recognition if it's still active after a delay
+      }, 30000);  // Adding a delay of 30 seconds before restarting
+    } else {
+      isRecognitionActive = false;
+      console.log('VICCI Content Script: Voice recognition ended.');
+    }
   };
 
   recognition.start();
+}
+
+function stopRecognition() {
+  if (recognition) {
+    recognition.stop();
+    isRecognitionActive = false;
+    console.log('VICCI Content Script: Stopping voice recognition.');
+  }
 }
 
 function handleVoiceCommand(command) {
