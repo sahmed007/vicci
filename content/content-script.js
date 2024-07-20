@@ -200,10 +200,17 @@ function handleVoiceCommand(command) {
   // Add more voice command handlers as needed
 }
 
-function captureScreenshot() {
-  return html2canvas(document.body).then((canvas) => {
-    return canvas.toDataURL();
-  });
+function captureScreenshot(callback) {
+  chrome.runtime.sendMessage(
+    { action: "captureScreenshot" },
+    function (response) {
+      if (response && response.dataURL) {
+        callback(response.dataURL);
+      } else if (response && response.error) {
+        console.error("Error capturing screenshot:", response.error);
+      }
+    }
+  );
 }
 
 async function describePage() {
