@@ -91,6 +91,28 @@ function initVICCI() {
   });
 
   chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+    if (request.action === "searchTerm") {
+      console.log(
+        "VICCI Background Service: Searching for term:",
+        request.term
+      );
+      chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+        if (tabs.length > 0) {
+          chrome.tabs.update(tabs[0].id, {
+            url: `https://www.google.com/search?q=${encodeURIComponent(
+              request.term
+            )}`,
+          });
+          sendResponse({ status: "searchTerm executed" });
+        } else {
+          sendResponse({ status: "No active tab found" });
+        }
+      });
+      return true; // Indicates that the response will be sent asynchronously
+    }
+  });
+
+  chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     if (request.action === "fetchApi") {
       const { screenshotDataUrl } = request;
 
@@ -126,26 +148,35 @@ function initVICCI() {
     }
   });
 
-  chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
-    console.log("VICCI Background Service: Received message:", request);
-    if (request.action === "speak") {
-      console.log("VICCI Background Service: Speaking text:", request.text);
-      chrome.tts.speak(request.text, {
-        rate: 1.0,
-        pitch: 1.0,
-        onEvent: function (event) {
-          console.log("VICCI Background Service: TTS event:", event.type);
-          if (event.type === "end") {
-            sendResponse({ status: "completed" });
-          }
-        },
-      });
-      return true; // Indicates we wish to send a response asynchronously
-    } else if (request.action === "logExposedFunctions") {
-      logExposedFunctions(request.functions);
-      sendResponse({ status: "logged" });
+  chrome.runtime.onMessage.addListener(
+    async (request, sender, sendResponse) => {
+      console.log("VICCI Background Service: Received message:", request);
+      if (request.action === "speak") {
+        console.log("VICCI Background Service: Speaking text:", request.text);
+        try {
+          chrome.tts.speak(request.text, {
+            rate: 1.0,
+            pitch: 1.0,
+            onEvent: function (event) {
+              console.log("VICCI Background Service: TTS event:", event.type);
+              if (event.type === "end") {
+                sendResponse({ status: "completed" });
+              }
+            },
+          });
+        } catch (error) {
+          console.error(
+            "VICCI Background Service: Error speaking text:",
+            error
+          );
+        }
+        return true; // Indicates we wish to send a response asynchronously
+      } else if (request.action === "logExposedFunctions") {
+        logExposedFunctions(request.functions);
+        sendResponse({ status: "logged" });
+      }
     }
-  });
+  );
 
   console.log("VICCI Background Service: Initialization complete");
 }

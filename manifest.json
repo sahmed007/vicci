@@ -67,6 +67,13 @@
       },
       "description": "Describe current page"
     },
+    "search-term": {
+      "suggested_key": {
+        "default": "Alt+Shift+L",
+        "mac": "Command+Shift+L"
+      },
+      "description": "Search for term"
+    },
     "activate-microphone": {
       "suggested_key": {
         "default": "Alt+Shift+M",

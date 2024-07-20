@@ -23,7 +23,7 @@ function speakFeedback(text) {
   console.log("VICCI Content Script: Speaking feedback:", text);
   isSpeaking = true;
   if (recognition && isRecognitionActive) {
-    recognition.stop(); // Stop recognition before speaking
+    recognition.stop();
   }
 
   chrome.runtime.sendMessage({ action: "speak", text: text }, (response) => {
@@ -55,6 +55,9 @@ document.addEventListener("keydown", (event) => {
       "VICCI Content Script: Microphone activation shortcut detected"
     );
     requestMicrophoneAccess();
+  } else if (event.altKey && event.shiftKey && event.key === "L") {
+    console.log("VICCI Content Script: Search for term shortcut detected");
+    searchForTerm();
   }
 
   if (isVicciActive) {
@@ -67,6 +70,10 @@ document.addEventListener("keydown", (event) => {
       case "p":
         console.log("VICCI Content Script: Describe page command detected");
         describePage();
+        break;
+      case "l":
+        console.log("VICCI Content Script: Search for term command detected");
+        searchForTerm("artificial intelligence");
         break;
       // Add more command handlers here
     }
@@ -196,6 +203,8 @@ function handleVoiceCommand(command) {
     window.VICCI.actions.stopChat();
   } else if (command.toLowerCase().includes("describe page")) {
     window.VICCI.actions.describePage();
+  } else if (command.toLowerCase().includes("search for term")) {
+    window.VICCI.actions.searchForTerm();
   }
   // Add more voice command handlers as needed
 }
@@ -224,22 +233,40 @@ async function describePage() {
     chrome.runtime.sendMessage(
       { action: "fetchApi", screenshotDataUrl },
       (response) => {
-        console.log("VICCI Content Script: RESPONSE FROM CLOUDRUN", response);
+        // we got the feedback from cloudrun
+        console.log("RESPONSE FROM CLOUDRUN", response);
+        speakFeedback(response.data.description);
+
+        // we want to get the page structure
+        // const pageStructure = window.VICCI.domParser.getPageStructure();
+        // let description = generateDescription(pageStructure);
         if (response.error) {
           console.error(
             "VICCI Content Script: Error generating content:",
             response.error
           );
-          speakFeedback("Failed to generate content.");
-        } else {
-          console.log("RESULTS", response.data);
-          speakFeedback(response.data.content);
         }
       }
     );
   } catch (error) {
     console.error("VICCI Content Script: Error generating content:", error);
-    speakFeedback("Failed to generate content.");
+  }
+}
+
+function searchForTerm(term) {
+  console.log("VICCI Content Script: Searching for term:", term);
+  try {
+    const searchBox = document.getElementById("searchInput");
+    console.log("VICCI Content Script: Search box found:", searchBox);
+    if (searchBox) {
+      searchBox.value = term;
+      searchBox.form.submit();
+      console.log("VICCI Content Script: Search term submitted:", term);
+    } else {
+      console.error("VICCI Content Script: Search input not found");
+    }
+  } catch (error) {
+    console.error("VICCI Content Script: Error searching for term:", error);
   }
 }
 
