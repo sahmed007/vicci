@@ -223,14 +223,25 @@ function captureScreenshot(callback) {
 async function describePage() {
   console.log("VICCI Content Script: Describing page");
   captureScreenshot((screenshotDataUrl) => {
-    console.log(
-      "VICCI Content Script: Screenshot captured:",
-      screenshotDataUrl
-    );
-    generateContent(screenshotDataUrl)
-      .then((content) => {
-        console.log("RESULTS", content);
-        speakFeedback(content);
+    console.log(screenshotDataUrl);
+    fetch(
+      "https://us-central1-aitx-hack24aus-622.cloudfunctions.net/browser-generation-test",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Access-Control-Allow-Origin": "*",
+        },
+        body: JSON.stringify({ screenshotDataUrl }),
+        mode: "no-cors",
+      }
+    )
+      .then((response) => response.text())
+      .then((text) => {
+        console.log("Raw response:", text);
+        const data = JSON.parse(text);
+        console.log("RESULTS", data);
+        speakFeedback(data.content);
       })
       .catch((error) => {
         console.error("VICCI Content Script: Error generating content:", error);
