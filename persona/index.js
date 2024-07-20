@@ -25,9 +25,9 @@ window.VICCI.config = config;
 document.addEventListener('DOMContentLoaded', () => {
   // Load the PersonaClient script dynamically
   var script = document.createElement("script");
-  script.src = "https://api.prod.centralus.az.sindarin.tech/PersonaClientPublicV2?apikey=<YOUR_CLIENT_KEY>";
+  script.src = "https://api.prod.centralus.az.sindarin.tech/PersonaClientPublicV2?apikey=208afb4d-b3ba-473e-8926-c6b4e0e47795";
   script.onload = () => {
-    window.personaClient = new window.PersonaClient.default("<YOUR_CLIENT_KEY>");
+    window.personaClient = new window.PersonaClient.default("c124b7ef-6236-4391-a492-a30052779d9b");
     initializePersonaClient();
   };
   document.head.appendChild(script);
