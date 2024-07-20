@@ -22,7 +22,10 @@
     "babel-jest": "^27.0.0",
     "eslint": "^7.26.0",
     "jest": "^27.0.0",
-    "prettier": "^2.3.0"
-    "@sindarin/persona": "^0.0.18"
+    "prettier": "^2.3.0",
+    "@sindarin/persona": "^0.0.18",
+    "@google-cloud/vertexai": "^1.4.0",
+    "html2canvas": "^1.4.1",
+    "mime-types": "^2.1.35"
   }
 }

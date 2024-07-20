@@ -117,3 +117,4 @@ const actions = {
 // Expose the variable to the global scope
 window.VICCI = window.VICCI || {};
 window.VICCI.actions = actions;
+console.log('Actions loaded:' , actions);
