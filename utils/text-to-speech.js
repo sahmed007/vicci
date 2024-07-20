@@ -1,7 +1,7 @@
 class TTSService {
   constructor() {
     this.API_ENDPOINT = 'https://texttospeech.googleapis.com/v1/text:synthesize';
-    this.API_KEY = 'YOUR_GOOGLE_CLOUD_API_KEY'; // Remember to secure this
+    this.API_KEY = 'AIzaSyBLuBRffv7b08n5xIm3nGzsowyduugAtmo'; // Remember to secure this
   }
 
   async synthesizeSpeech(text, language = 'en-US', voice = 'en-US-Wavenet-D') {

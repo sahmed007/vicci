@@ -3,7 +3,7 @@
 class VisionService {
   constructor() {
     this.API_ENDPOINT = 'https://vision.googleapis.com/v1/images:annotate';
-    this.API_KEY = 'YOUR_GOOGLE_CLOUD_API_KEY'; // Remember to secure this
+    this.API_KEY = 'AIzaSyBLuBRffv7b08n5xIm3nGzsowyduugAtmo'; // Remember to secure this
   }
 
   async analyzeImage(imageUrl) {
