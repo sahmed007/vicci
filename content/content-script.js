@@ -200,17 +200,8 @@ function handleVoiceCommand(command) {
   // Add more voice command handlers as needed
 }
 
-let lastScreenshotTime = 0;
-const SCREENSHOT_INTERVAL = 1000;
-
 function captureScreenshot() {
   return new Promise((resolve, reject) => {
-    const now = Date.now();
-    if (now - lastScreenshotTime < SCREENSHOT_INTERVAL) {
-      return reject("Screenshot interval not met");
-    }
-    lastScreenshotTime = now;
-
     chrome.runtime.sendMessage(
       { action: "captureScreenshot" },
       function (response) {
@@ -229,33 +220,23 @@ async function describePage() {
   try {
     const screenshotDataUrl = await captureScreenshot();
     console.log("Screenshot captured:", screenshotDataUrl);
-    const response = await fetch(
-      "https://us-central1-aitx-hack24aus-622.cloudfunctions.net/browser-generation-test",
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ screenshotDataUrl }),
-        mode: "no-cors",
+
+    chrome.runtime.sendMessage(
+      { action: "fetchApi", screenshotDataUrl },
+      (response) => {
+        console.log("VICCI Content Script: RESPONSE FROM CLOUDRUN", response);
+        if (response.error) {
+          console.error(
+            "VICCI Content Script: Error generating content:",
+            response.error
+          );
+          speakFeedback("Failed to generate content.");
+        } else {
+          console.log("RESULTS", response.data);
+          speakFeedback(response.data.content);
+        }
       }
     );
-
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
-    }
-
-    const text = await response.text();
-    console.log("Raw response:", text);
-
-    try {
-      const data = JSON.parse(text);
-      console.log("RESULTS", data);
-      speakFeedback(data.content);
-    } catch (error) {
-      console.error("Error parsing JSON:", error);
-      speakFeedback("Failed to parse response.");
-    }
   } catch (error) {
     console.error("VICCI Content Script: Error generating content:", error);
     speakFeedback("Failed to generate content.");

@@ -91,6 +91,42 @@ function initVICCI() {
   });
 
   chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+    if (request.action === "fetchApi") {
+      const { screenshotDataUrl } = request;
+
+      fetch(
+        "https://us-central1-aitx-hack24aus-622.cloudfunctions.net/browser-generation-test",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ screenshotDataUrl }),
+        }
+      )
+        .then((response) => {
+          if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+          }
+          return response.text();
+        })
+        .then((text) => {
+          try {
+            const data = JSON.parse(text);
+            sendResponse({ data });
+          } catch (error) {
+            sendResponse({ error: "Failed to parse response." });
+          }
+        })
+        .catch((error) => {
+          sendResponse({ error: error.message });
+        });
+
+      return true;
+    }
+  });
+
+  chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     console.log("VICCI Background Service: Received message:", request);
     if (request.action === "speak") {
       console.log("VICCI Background Service: Speaking text:", request.text);

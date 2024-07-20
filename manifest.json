@@ -3,10 +3,26 @@
   "name": "VICCI - Vision Impaired Computer Control Interface",
   "version": "1.0",
   "description": "An AI-powered screen reader and web navigation assistant for visually impaired users",
-  "permissions": ["activeTab", "tts", "commands", "tabs", "storage"],
+  "permissions": [
+    "activeTab",
+    "tts",
+    "commands",
+    "tabs",
+    "storage",
+    "declarativeNetRequest"
+  ],
   "host_permissions": ["<all_urls>"],
   "background": {
     "service_worker": "background/background.js"
+  },
+  "declarative_net_request": {
+    "rule_resources": [
+      {
+        "id": "ruleset_1",
+        "enabled": true,
+        "path": "rules.json"
+      }
+    ]
   },
   "content_scripts": [
     {
