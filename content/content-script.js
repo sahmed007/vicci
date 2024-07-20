@@ -73,7 +73,7 @@ document.addEventListener("keydown", (event) => {
         break;
       case "l":
         console.log("VICCI Content Script: Search for term command detected");
-        searchForTerm("artificial intelligence");
+        searchForTerm("graphics processing unit");
         break;
       // Add more command handlers here
     }
@@ -203,8 +203,10 @@ function handleVoiceCommand(command) {
     window.VICCI.actions.stopChat();
   } else if (command.toLowerCase().includes("describe page")) {
     window.VICCI.actions.describePage();
-  } else if (command.toLowerCase().includes("search for term")) {
-    window.VICCI.actions.searchForTerm();
+  } else if (
+    command.toLowerCase().includes("search for graphics processing unit")
+  ) {
+    window.VICCI.actions = searchForTerm();
   }
   // Add more voice command handlers as needed
 }
