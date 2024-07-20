@@ -1,0 +1,16 @@
+{
+  "name": "vicci-server",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "dependencies": {
+    "@google-cloud/vertexai": "^1.4.0",
+    "html2canvas": "^1.4.1",
+    "mime-types": "^2.1.35"
+  }
+}
